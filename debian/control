@@ -1,0 +1,12 @@
+Source: wb-zigbee2mqtt
+Maintainer: --
+Section: misc
+Priority: optional
+Standards-Version: 1.0.0
+Build-Depends: debhelper (>= 9), pkg-config
+
+Package: wb-zigbee2mqtt
+Architecture: all
+Depends: ${misc:Depends}, wb-rules (>= 2.6.0) 
+Breaks: 
+Description: wb-zigbee2mqtt

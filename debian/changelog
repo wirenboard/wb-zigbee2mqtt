@@ -1,0 +1,5 @@
+wb-zigbee2mqtt (1.0.0) stable; urgency=medium
+
+  * init wb-zigbee2mqtt
+
+ -- Yan Yanin <ianin@wirenboard.ru>  Tue, 15 Sep 2020 08:56:11 +0300
