@@ -47,7 +47,7 @@ defineRule("Update devices", {
 defineRule("Permit join", {
     whenChanged: "zigbee2mqtt/Permit join",
     then: function(newValue, devName, cellName) {
-        publish(base_topic + "/bridge/config/Permit join", newValue);
+        publish(base_topic + "/bridge/config/permit_join", newValue);
     }
 });
 
@@ -67,10 +67,10 @@ defineRule("Permit join", {
     trackMqtt(base_topic + "/bridge/config", function(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
-                if (k == 'Permit join') {
+                if (k == 'permit_join') {
                     dev["zigbee2mqtt"]["Permit join"] = v;
                 }
-                if (k == 'Log level') {
+                if (k == 'log_level') {
                     dev["zigbee2mqtt"]["Log level"] = v;
                 }
                 if (k == 'version') {
