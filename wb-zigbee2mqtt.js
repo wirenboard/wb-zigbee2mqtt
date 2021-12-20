@@ -3,9 +3,19 @@ var topicType = JSON.stringify({
     battery: "value",
     linkquality: "value",
     temperature: "temperature",
-    voltage: "value",
     humidity: "rel_humidity",
-    pressure: "atmospheric_pressure"
+    pressure: "atmospheric_pressure",
+    co2: "value",
+    voc: "value",
+    illuminance: "value",
+    illuminance_lux: "value",
+    linkquality: "value",
+    noise: "value",
+    noise_detected: "text",
+    occupancy: "text",
+    occupancy_level: "value",
+    power: "power",
+    voltage: "voltage",
 });
 
 defineVirtualDevice("zigbee2mqtt", {
@@ -40,14 +50,14 @@ defineVirtualDevice("zigbee2mqtt", {
 defineRule("Update devices", {
     whenChanged: "zigbee2mqtt/Update devices",
     then: function(newValue, devName, cellName) {
-        publish(base_topic + "/bridge/config/devices/get", "");
+        publish(base_topic + "/bridge/devices/get", "");
     }
 });
 
 defineRule("Permit join", {
     whenChanged: "zigbee2mqtt/Permit join",
     then: function(newValue, devName, cellName) {
-        publish(base_topic + "/bridge/config/permit_join", newValue);
+        publish(base_topic + "/bridge/request/permit_join", newValue);
     }
 });
 
@@ -56,7 +66,7 @@ defineRule("Permit join", {
         dev["zigbee2mqtt"]["State"] = obj.value;
         if (obj.value == "online") {
             setTimeout(function() {
-                publish(base_topic + "/bridge/config/devices/get", "");
+                publish(base_topic + "/bridge/devices/get", "");
             }, 5000);
         }
     });
@@ -67,9 +77,6 @@ defineRule("Permit join", {
     trackMqtt(base_topic + "/bridge/config", function(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
-                if (k == 'permit_join') {
-                    dev["zigbee2mqtt"]["Permit join"] = v;
-                }
                 if (k == 'log_level') {
                     dev["zigbee2mqtt"]["Log level"] = v;
                 }
@@ -80,7 +87,19 @@ defineRule("Permit join", {
         }
     });
 
-    trackMqtt(base_topic + "/bridge/config/devices", function(obj) {
+
+    trackMqtt(base_topic + "/bridge/response/permit_join", function(obj) {
+        if (obj.value != '') {
+            JSON.parse(obj.value, function(k, v) {
+                if (k == 'value') {
+                    dev["zigbee2mqtt"]["Permit join"] = v;
+                }
+            });
+        }
+    });
+
+
+    trackMqtt(base_topic + "/bridge/devices", function(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
                 if (k == 'friendly_name' && v != 'Coordinator') {
