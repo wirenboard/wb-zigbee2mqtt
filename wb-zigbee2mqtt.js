@@ -11,8 +11,6 @@ var topicType = JSON.stringify({
     illuminance_lux: "value",
     linkquality: "value",
     noise: "value",
-    noise_detected: "text",
-    occupancy: "text",
     occupancy_level: "value",
     power: "power",
     voltage: "voltage",
