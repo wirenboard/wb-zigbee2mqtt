@@ -44,17 +44,21 @@ defineVirtualDevice("zigbee2mqtt", {
     }
 });
 
+function updateDevices() {
+    publish(base_topic + "/bridge/devices/get", "");
+    publish(base_topic + "/bridge/config/devices/get", "");  // for z2m 1.18 support
+}
+
 defineRule("Update devices", {
     whenChanged: "zigbee2mqtt/Update devices",
-    then: function(newValue, devName, cellName) {
-        publish(base_topic + "/bridge/devices/get", "");
-    }
+    then: updateDevices
 });
 
 defineRule("Permit join", {
     whenChanged: "zigbee2mqtt/Permit join",
     then: function(newValue, devName, cellName) {
         publish(base_topic + "/bridge/request/permit_join", newValue);
+        publish(base_topic + "/bridge/config/permit_join", newValue);  // for z2m 1.18 support
     }
 });
 
@@ -62,9 +66,7 @@ defineRule("Permit join", {
     trackMqtt(base_topic + "/bridge/state", function(obj) {
         dev["zigbee2mqtt"]["State"] = obj.value;
         if (obj.value == "online") {
-            setTimeout(function() {
-                publish(base_topic + "/bridge/devices/get", "");
-            }, 5000);
+            setTimeout(updateDevices, 5000);
         }
     });
     trackMqtt(base_topic + "/bridge/log", function(obj) {
@@ -74,6 +76,9 @@ defineRule("Permit join", {
     trackMqtt(base_topic + "/bridge/config", function(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
+                if (k == 'permit_join') {  // for z2m 1.18 support
+                    dev["zigbee2mqtt"]["Permit join"] = v;
+                }
                 if (k == 'log_level') {
                     dev["zigbee2mqtt"]["Log level"] = v;
                 }
@@ -95,8 +100,7 @@ defineRule("Permit join", {
         }
     });
 
-
-    trackMqtt(base_topic + "/bridge/devices", function(obj) {
+    function trackDevices(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
                 if (k == 'friendly_name' && v != 'Coordinator') {
@@ -118,6 +122,9 @@ defineRule("Permit join", {
             });
         }
     });
+
+    trackMqtt(base_topic + "/bridge/devices", trackDevices);
+    trackMqtt(base_topic + "/bridge/config/devices", trackDevices);  // for z2m 1.18 support
 })()
 
 function initTracker(ctrlName) {
