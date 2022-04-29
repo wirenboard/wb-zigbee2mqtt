@@ -1,3 +1,9 @@
+wb-zigbee2mqtt (1.1.0) stable; urgency=medium
+
+  * add zigbee2mqtt 1.22+ support (should not break 1.18.1)
+
+ -- Nikita Maslov <nikita.maslov@wirenboard.ru>  Fri, 29 Apr 2022 18:37:31 +0300
+
 wb-zigbee2mqtt (1.0.0) stable; urgency=medium
 
   * init wb-zigbee2mqtt
