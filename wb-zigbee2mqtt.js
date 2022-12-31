@@ -41,7 +41,11 @@ function isOnlyRetrievable(a) {
     return a & 5 == 4 ? true : false;
 }
 
-defineVirtualDevice("zigbee2mqtt", {
+(function() {
+    if (getDevice("zigbee2mqtt") !== undefined && getDevice("zigbee2mqtt").isVirtual())
+        return;
+
+    defineVirtualDevice("zigbee2mqtt", {
     title: "Zigbee2mqtt",
     cells: {
         "State": {
@@ -119,6 +123,8 @@ trackMqtt(zb_base_topic + "/bridge/response/permit_join", function(obj) {
             }
         });
     }
+});
+
 });
 
 function initBinaryControl(zbDevice, devName, feat) {
