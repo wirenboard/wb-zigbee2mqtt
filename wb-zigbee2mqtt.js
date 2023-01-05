@@ -2,8 +2,8 @@
 \file
 \brief Zigbee2MQTT to Wiren Board MQTT Conventions bridge
 \author vsnim
-\version 0.1
-\date 31.12.2022
+\version 0.2
+\date 05.01.2023
 \warning Not all value types are supported
 
 
@@ -228,9 +228,10 @@ function initEnumControl(zbDevice, devName, feat) {
             whenChanged: devName + "/" + toggle,
             then: function(newValue, a, b) {
 				var opts = devControl.getControl(feat.property).getDescription().split(',');
-                var msg = "{\"" + feat.property + "\" : \"" + opts[(opts.indexOf(dev[devName][feat.property]) + 1) % opts.length] + "\"}";
-//				log(dev[devName][feat.property], opts[(opts.indexOf(dev[devName][feat.property]) + 1) % opts.length]);
-//                log(a, b, zb_base_topic + "/" + zbDevice + "/set", "->", msg);
+				var current = devControl.getControl(feat.property).getValue();
+                var msg = "{\"" + feat.property + "\" : \"" + opts[(opts.indexOf(current) + 1) % opts.length] + "\"}";
+//				log(dev[devName][feat.property], devControl.getControl(feat.property).getValue(), opts, opts.indexOf(current), opts.length, opts[(opts.indexOf(current) + 1) % opts.length]);
+//              log(a, b, zb_base_topic + "/" + zbDevice + "/set", "->", msg);
                 publish(zb_base_topic + "/" + zbDevice + "/set", msg);
             }
         });
@@ -279,6 +280,7 @@ function initControl(zbDevice, devName, param) {
 trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
     if (str.value == '')
         return;
+	log ("wb-zigbee2mqtt devices update start");
 
     JSON.parse(str.value).forEach(function(obj) {
         if (obj.type === "Coordinator" || obj.definition === undefined)
@@ -353,4 +355,5 @@ trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
         initTextControl(devName, "model", obj.definition.model);
         initTextControl(devName, "description", obj.definition.description);
     });
+	  log ("wb-zigbee2mqtt devices update done");
 });
