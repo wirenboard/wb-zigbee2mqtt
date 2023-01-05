@@ -38,7 +38,7 @@ function isPublished(a) {
 }
 
 function isOnlyRetrievable(a) {
-    return a & 5 == 4 ? true : false;
+    return (a & 5) == 4 ? true : false;
 }
 
 (function() {
@@ -125,7 +125,7 @@ trackMqtt(zb_base_topic + "/bridge/response/permit_join", function(obj) {
     }
 });
 
-});
+})()
 
 function initBinaryControl(zbDevice, devName, feat) {
     //log("adding binary control", feat.property);
