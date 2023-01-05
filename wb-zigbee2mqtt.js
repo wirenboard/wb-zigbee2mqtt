@@ -24,7 +24,6 @@ Supported value types are
 
 See https://www.zigbee2mqtt.io/guide/usage/exposes.html for value types information.
 */
-
 var zb_base_topic = "zigbee2mqtt";
 var zb_device_prefix = "";
 
@@ -41,89 +40,89 @@ function isOnlyRetrievable(a) {
     return (a & 5) == 4 ? true : false;
 }
 
-(function() {
+(function tryCreateZ2MController() {
     if (getDevice("zigbee2mqtt") !== undefined && getDevice("zigbee2mqtt").isVirtual())
         return;
 
     defineVirtualDevice("zigbee2mqtt", {
-    title: "Zigbee2mqtt",
-    cells: {
-        "State": {
-            type: "text",
-            value: ""
-        },
-        "Permit join": {
-            type: "switch",
-            value: false
-        },
-        "Update devices": {
-            type: "pushbutton"
-        },
-        "Version": {
-            type: "text",
-            value: ""
-        },
-        "Log level": {
-            type: "text",
-            value: ""
-        },
-        "Log": {
-            type: "text",
-            value: ""
-        },
-    }
-});
+        title: "Zigbee2mqtt",
+        cells: {
+            "State": {
+                type: "text",
+                value: ""
+            },
+            "Permit join": {
+                type: "switch",
+                value: false
+            },
+            "Update devices": {
+                type: "pushbutton"
+            },
+            "Version": {
+                type: "text",
+                value: ""
+            },
+            "Log level": {
+                type: "text",
+                value: ""
+            },
+            "Log": {
+                type: "text",
+                value: ""
+            },
+        }
+    });
 
-defineRule("Update devices", {
-    whenChanged: "zigbee2mqtt/Update devices",
-    then: function(newValue, devName, cellName) {
-        publish(zb_base_topic + "/bridge/devices/get", "");
-    }
-});
-
-defineRule("Permit join", {
-    whenChanged: "zigbee2mqtt/Permit join",
-    then: function(newValue, devName, cellName) {
-        publish(zb_base_topic + "/bridge/request/permit_join", newValue);
-    }
-});
-
-
-trackMqtt(zb_base_topic + "/bridge/state", function(obj) {
-    dev["zigbee2mqtt"]["State"] = obj.value;
-    if (obj.value == "online") {
-        setTimeout(function() {
+    defineRule("Update devices", {
+        whenChanged: "zigbee2mqtt/Update devices",
+        then: function(newValue, devName, cellName) {
             publish(zb_base_topic + "/bridge/devices/get", "");
-        }, 5000);
-    }
-});
+        }
+    });
 
-trackMqtt(zb_base_topic + "/bridge/log", function(obj) {
-    dev["zigbee2mqtt"]["Log"] = obj.value;
-});
+    defineRule("Permit join", {
+        whenChanged: "zigbee2mqtt/Permit join",
+        then: function(newValue, devName, cellName) {
+            publish(zb_base_topic + "/bridge/request/permit_join", newValue);
+        }
+    });
 
-trackMqtt(zb_base_topic + "/bridge/config", function(obj) {
-    if (obj.value != '') {
-        JSON.parse(obj.value, function(k, v) {
-            if (k == 'log_level') {
-                dev["zigbee2mqtt"]["Log level"] = v;
-            }
-            if (k == 'version') {
-                dev["zigbee2mqtt"]["Version"] = v;
-            }
-        });
-    }
-});
 
-trackMqtt(zb_base_topic + "/bridge/response/permit_join", function(obj) {
-    if (obj.value != '') {
-        JSON.parse(obj.value, function(k, v) {
-            if (k == 'value') {
-                dev["zigbee2mqtt"]["Permit join"] = v;
-            }
-        });
-    }
-});
+    trackMqtt(zb_base_topic + "/bridge/state", function(obj) {
+        dev["zigbee2mqtt"]["State"] = obj.value;
+        if (obj.value == "online") {
+            setTimeout(function() {
+                publish(zb_base_topic + "/bridge/devices/get", "");
+            }, 5000);
+        }
+    });
+
+    trackMqtt(zb_base_topic + "/bridge/log", function(obj) {
+        dev["zigbee2mqtt"]["Log"] = obj.value;
+    });
+
+    trackMqtt(zb_base_topic + "/bridge/config", function(obj) {
+        if (obj.value != '') {
+            JSON.parse(obj.value, function(k, v) {
+                if (k == 'log_level') {
+                    dev["zigbee2mqtt"]["Log level"] = v;
+                }
+                if (k == 'version') {
+                    dev["zigbee2mqtt"]["Version"] = v;
+                }
+            });
+        }
+    });
+
+    trackMqtt(zb_base_topic + "/bridge/response/permit_join", function(obj) {
+        if (obj.value != '') {
+            JSON.parse(obj.value, function(k, v) {
+                if (k == 'value') {
+                    dev["zigbee2mqtt"]["Permit join"] = v;
+                }
+            });
+        }
+    });
 
 })()
 
@@ -209,7 +208,7 @@ function initEnumControl(zbDevice, devName, feat) {
 
     devControl.addControl(feat.property, {
         type: "text",
-		description: feat.values.toString(),
+        description: feat.values.toString(),
         value: ""
     });
 
@@ -227,11 +226,11 @@ function initEnumControl(zbDevice, devName, feat) {
         defineRule({
             whenChanged: devName + "/" + toggle,
             then: function(newValue, a, b) {
-				var opts = devControl.getControl(feat.property).getDescription().split(',');
-				var current = devControl.getControl(feat.property).getValue();
+                var opts = devControl.getControl(feat.property).getDescription().split(',');
+                var current = devControl.getControl(feat.property).getValue();
                 var msg = "{\"" + feat.property + "\" : \"" + opts[(opts.indexOf(current) + 1) % opts.length] + "\"}";
-//				log(dev[devName][feat.property], devControl.getControl(feat.property).getValue(), opts, opts.indexOf(current), opts.length, opts[(opts.indexOf(current) + 1) % opts.length]);
-//              log(a, b, zb_base_topic + "/" + zbDevice + "/set", "->", msg);
+                //				log(dev[devName][feat.property], devControl.getControl(feat.property).getValue(), opts, opts.indexOf(current), opts.length, opts[(opts.indexOf(current) + 1) % opts.length]);
+                //              log(a, b, zb_base_topic + "/" + zbDevice + "/set", "->", msg);
                 publish(zb_base_topic + "/" + zbDevice + "/set", msg);
             }
         });
@@ -280,7 +279,7 @@ function initControl(zbDevice, devName, param) {
 trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
     if (str.value == '')
         return;
-	log ("wb-zigbee2mqtt devices update start");
+    log("wb-zigbee2mqtt devices update start");
 
     JSON.parse(str.value).forEach(function(obj) {
         if (obj.type === "Coordinator" || obj.definition === undefined)
@@ -355,5 +354,5 @@ trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
         initTextControl(devName, "model", obj.definition.model);
         initTextControl(devName, "description", obj.definition.description);
     });
-	  log ("wb-zigbee2mqtt devices update done");
+    log("wb-zigbee2mqtt devices update done");
 });
