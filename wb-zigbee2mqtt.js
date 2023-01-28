@@ -2,8 +2,8 @@
 \file
 \brief Zigbee2MQTT to Wiren Board MQTT Conventions bridge
 \author vsnim
-\version 0.2
-\date 05.01.2023
+\version 0.3
+\date 28.01.2023
 \warning Not all value types are supported
 
 
@@ -24,21 +24,15 @@ Supported value types are
 
 See https://www.zigbee2mqtt.io/guide/usage/exposes.html for value types information.
 */
+publish("telegram/send", "wb-zigbee2mqtt start");
+
 var zb_base_topic = "zigbee2mqtt";
 var zb_device_prefix = "";
 
-/// Access property (see https://www.zigbee2mqtt.io/guide/usage/exposes.html#access)
-function isReadOnly(a) {
-    return a & 2 ? false : true;
-}
-
-function isPublished(a) {
-    return a & 1 ? true : false;
-}
-
-function isOnlyRetrievable(a) {
-    return (a & 5) == 4 ? true : false;
-}
+trackMqtt(zb_base_topic + "/bridge/state", function(obj) {
+    if (obj.value !== "")
+        publish("telegram/send", "Zigbee2MQTT state: " + obj.value);
+});
 
 (function tryCreateZ2MController() {
     if (getDevice("zigbee2mqtt") !== undefined && getDevice("zigbee2mqtt").isVirtual())
@@ -69,7 +63,7 @@ function isOnlyRetrievable(a) {
             "Log": {
                 type: "text",
                 value: ""
-            },
+            }
         }
     });
 
@@ -126,6 +120,19 @@ function isOnlyRetrievable(a) {
 
 })()
 
+/// Access property (see https://www.zigbee2mqtt.io/guide/usage/exposes.html#access)
+function isReadOnly(a) {
+    return a & 2 ? false : true;
+}
+
+function isPublished(a) {
+    return a & 1 ? true : false;
+}
+
+function isOnlyRetrievable(a) {
+    return (a & 5) == 4 ? true : false;
+}
+
 function initBinaryControl(zbDevice, devName, feat) {
     //log("adding binary control", feat.property);
     var devControl = getDevice(devName);
@@ -141,7 +148,7 @@ function initBinaryControl(zbDevice, devName, feat) {
     });
 
     if (!isReadOnly(feat.access)) {
-        defineRule({
+        defineRule(devName + "/" + feat.property, {
             whenChanged: devName + "/" + feat.property,
             then: function(newValue) {
                 var msg = "{\"" + feat.property + "\" : \"" + (newValue ? feat.value_on : feat.value_off) + "\"}";
@@ -189,7 +196,7 @@ function initRangeControl(zbDevice, devName, feat) {
     });
 
     if (!isReadOnly(feat.access))
-        defineRule({
+        defineRule(devName + "/" + feat.property, {
             whenChanged: devName + "/" + feat.property,
             then: function(newValue, a, b) {
                 var msg = "{\"" + feat.property + "\" : " + newValue + "}";
@@ -223,7 +230,7 @@ function initEnumControl(zbDevice, devName, feat) {
             value: false
         });
 
-        defineRule({
+        defineRule(devName + "/" + toggle, {
             whenChanged: devName + "/" + toggle,
             then: function(newValue, a, b) {
                 var opts = devControl.getControl(feat.property).getDescription().split(',');
@@ -279,6 +286,7 @@ function initControl(zbDevice, devName, param) {
 trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
     if (str.value == '')
         return;
+    publish("telegram/send", "wb-zigbee2mqtt devices update start");
     log("wb-zigbee2mqtt devices update start");
 
     JSON.parse(str.value).forEach(function(obj) {
@@ -320,39 +328,47 @@ trackMqtt(zb_base_topic + "/bridge/devices", function(str) {
                 });
         });
 
-        trackMqtt(zb_base_topic + "/" + zbDevice, function(s) {
-            JSON.parse(s.value, function(k, v) {
-                if (k === undefined || k === "")
-                    return;
-
-                if (!getDevice(devName).isControlExists(k))
-                    getDevice(devName).addControl(k, {
-                        type: "text",
-                        value: v.toString(),
-                        readonly: true
-                    });
-
-                if (devControl.getControl(k).getType() === "switch" && typeof v !== "boolean" && devControl.getControl(k).getDescription() !== "")
-                    devControl.getControl(k).setValue({
-                        value: !!devControl.getControl(k).getDescription().toLowerCase().split(',').indexOf(v.toLowerCase()),
-                        notify: false
-                    });
-                else if (devControl.getControl(k).getType() === "range" || devControl.getControl(k).getType() === "value")
-                    devControl.getControl(k).setValue({
-                        value: v,
-                        notify: false
-                    });
-                else
-                    devControl.getControl(k).setValue({
-                        value: v.toString(),
-                        notify: false
-                    });
-            });
-        });
-
         initTextControl(devName, "vendor", obj.definition.vendor);
         initTextControl(devName, "model", obj.definition.model);
         initTextControl(devName, "description", obj.definition.description);
     });
+    publish("telegram/send", "wb-zigbee2mqtt devices update finished");
     log("wb-zigbee2mqtt devices update done");
+});
+
+trackMqtt(zb_base_topic + "/+", function(s) {
+    if (s.topic !== (zb_base_topic + "/bridge")) {
+        var devName = s.topic.split('/')[1];
+        var devControl = getDevice(devName);
+        JSON.parse(s.value, function(k, v) {
+            if (k === undefined || k === "")
+                return;
+            if (!getDevice(devName).isControlExists(k) && typeof v !== "object")
+                getDevice(devName).addControl(k, {
+                    type: "text",
+                    value: v.toString(),
+                    readonly: true
+                });
+            if (typeof v === "object") {
+                return;
+            }
+            if ((typeof v !== "boolean") && (devControl.getControl(k).getType() === "switch") && (devControl.getControl(k).getDescription() !== "")) {
+                devControl.getControl(k).setValue({
+                    value: !!devControl.getControl(k).getDescription().toLowerCase().split(',').indexOf(v.toLowerCase()),
+                    notify: false
+                });
+            } else if ((devControl.getControl(k).getType() === "range" || devControl.getControl(k).getType() === "value") && typeof v === "number") {
+                devControl.getControl(k).setValue({
+                    value: v,
+                    notify: false
+                });
+            } else if (typeof v !== "object") {
+                devControl.getControl(k).setValue({
+                    value: v.toString(),
+                    notify: false
+                });
+            }
+
+        });
+    }
 });
