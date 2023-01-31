@@ -67,10 +67,23 @@ defineRule("Permit join", {
             }, 5000);
         }
     });
+
+    //for zigbee2mqtt 1.18.x
     trackMqtt(base_topic + "/bridge/log", function(obj) {
         dev["zigbee2mqtt"]["Log"] = obj.value;
     });
 
+    //for zigbee2mqtt 1.21.x and above
+    trackMqtt(base_topic + "/bridge/logging", function(obj) {
+        var msg = JSON.parse(obj.value)
+
+        if (msg["message"].indexOf("MQTT publish") != 0){
+          dev["zigbee2mqtt"]["Log"] = msg["message"];
+          dev["zigbee2mqtt"]["Log level"] = msg["level"];
+        }
+    });
+
+    //for zigbee2mqtt 1.18.x
     trackMqtt(base_topic + "/bridge/config", function(obj) {
         if (obj.value != '') {
             JSON.parse(obj.value, function(k, v) {
@@ -84,6 +97,11 @@ defineRule("Permit join", {
         }
     });
 
+    //for zigbee2mqtt 1.21.x and above
+    trackMqtt(base_topic + "/bridge/info", function(obj) {
+        var msg = JSON.parse(obj.value)
+        dev["zigbee2mqtt"]["Version"] = msg["version"];
+    });
 
     trackMqtt(base_topic + "/bridge/response/permit_join", function(obj) {
         if (obj.value != '') {
@@ -94,7 +112,6 @@ defineRule("Permit join", {
             });
         }
     });
-
 
     trackMqtt(base_topic + "/bridge/devices", function(obj) {
         if (obj.value != '') {
