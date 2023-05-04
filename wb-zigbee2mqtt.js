@@ -161,6 +161,7 @@ function initTracker(ctrlName) {
                             readonly: true
                         });
                     }
+                    if (v==null){v="";};
                     dev[ctrlName][k] = v.toString();
                 }
             }
