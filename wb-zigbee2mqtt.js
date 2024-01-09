@@ -1,5 +1,5 @@
 var base_topic = 'zigbee2mqtt';
-var topicType = JSON.stringify({
+var controlsTypes = JSON.stringify({
   battery: 'value',
   linkquality: 'value',
   temperature: 'temperature',
@@ -137,33 +137,38 @@ defineRule('Permit join', {
   });
 })();
 
-function initTracker(ctrlName) {
-  trackMqtt(base_topic + '/' + ctrlName, function (obj) {
-    JSON.parse(obj.value, function (k, v) {
-      if (k != '') {
-        var obj = JSON.parse(topicType);
-        var ks = Object.keys(obj);
-        var resultIndex = ks.indexOf(k, 0);
-        if (resultIndex >= 0) {
-          if (!getDevice(ctrlName).isControlExists(k)) {
-            getDevice(ctrlName).addControl(k, {
-              type: obj[ks[resultIndex]],
-              value: v,
-              readonly: true,
-            });
-          }
-          dev[ctrlName][k] = v;
+function initTracker(deviceName) {
+  trackMqtt(base_topic + '/' + deviceName, function (obj) {
+    var device = JSON.parse(obj.value);
+    for (var key in device) {
+      if (key != '') {
+        var types = JSON.parse(controlsTypes);
+        var controls = Object.keys(types);
+        var index = controls.indexOf(key, 0);
+
+        var controlType = index >= 0 ? types[controls[index]] : 'text';
+        if (!getDevice(deviceName).isControlExists(key)) {
+          getDevice(deviceName).addControl(key, {
+            type: controlType,
+            value: device[key],
+            readonly: true,
+          });
+        }
+
+        if (index >= 0) {
+          dev[deviceName][key] = device[key];
         } else {
-          if (!getDevice(ctrlName).isControlExists(k)) {
-            getDevice(ctrlName).addControl(k, {
-              type: 'text',
-              value: v,
-              readonly: true,
-            });
+          if (device[key] != null) {
+            if (typeof device[key] === 'object') {
+              dev[deviceName][key] = JSON.stringify(device[key]);
+            } else {
+              dev[deviceName][key] = device[key].toString();
+            }
+          } else {
+            dev[deviceName][key] = '';
           }
-          dev[ctrlName][k] = v != null ? v.toString() : '';
         }
       }
-    });
+    }
   });
 }
