@@ -1,5 +1,5 @@
 var base_topic = 'zigbee2mqtt';
-var controlsTypes = JSON.stringify({
+var controlsTypes = {
   battery: 'value',
   linkquality: 'value',
   temperature: 'temperature',
@@ -13,7 +13,7 @@ var controlsTypes = JSON.stringify({
   occupancy_level: 'value',
   power: 'power',
   voltage: 'voltage',
-});
+};
 
 defineVirtualDevice('zigbee2mqtt', {
   title: 'Zigbee2mqtt',
@@ -142,11 +142,7 @@ function initTracker(deviceName) {
     var device = JSON.parse(obj.value);
     for (var key in device) {
       if (key != '') {
-        var types = JSON.parse(controlsTypes);
-        var controls = Object.keys(types);
-        var index = controls.indexOf(key, 0);
-
-        var controlType = index >= 0 ? types[controls[index]] : 'text';
+        var controlType = key in controlsTypes ? controlsTypes[key] : 'text';
         if (!getDevice(deviceName).isControlExists(key)) {
           getDevice(deviceName).addControl(key, {
             type: controlType,
@@ -155,7 +151,7 @@ function initTracker(deviceName) {
           });
         }
 
-        if (index >= 0) {
+        if (key in controlsTypes) {
           dev[deviceName][key] = device[key];
         } else {
           if (device[key] != null) {
