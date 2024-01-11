@@ -137,33 +137,42 @@ defineRule('Permit join', {
   });
 })();
 
+function getControlType(controlName, controlsTypes) {
+  return controlName in controlsTypes ? controlsTypes[controlName] : 'text';
+}
+
+function getContolValue(contolName, controlValue, controlsTypes) {
+  if (contolName in controlsTypes) {
+    return controlValue;
+  } else {
+    if (controlValue != null) {
+      if (typeof controlValue === 'object') {
+        return JSON.stringify(controlValue);
+      } else {
+        return controlValue.toString();
+      }
+    } else {
+      return '';
+    }
+  }
+}
+
 function initTracker(deviceName) {
   trackMqtt(base_topic + '/' + deviceName, function (obj) {
     var device = JSON.parse(obj.value);
-    for (var key in device) {
-      if (key != '') {
-        var controlType = key in controlsTypes ? controlsTypes[key] : 'text';
-        if (!getDevice(deviceName).isControlExists(key)) {
-          getDevice(deviceName).addControl(key, {
-            type: controlType,
-            value: device[key],
-            readonly: true,
-          });
-        }
+    for (var controlName in device) {
+      if (controlName == '') {
+        continue;
+      }
 
-        if (key in controlsTypes) {
-          dev[deviceName][key] = device[key];
-        } else {
-          if (device[key] != null) {
-            if (typeof device[key] === 'object') {
-              dev[deviceName][key] = JSON.stringify(device[key]);
-            } else {
-              dev[deviceName][key] = device[key].toString();
-            }
-          } else {
-            dev[deviceName][key] = '';
-          }
-        }
+      if (!getDevice(deviceName).isControlExists(controlName)) {
+        getDevice(deviceName).addControl(controlName, {
+          type: getControlType(controlName, controlsTypes),
+          value: getContolValue(controlName, device[controlName], controlsTypes),
+          readonly: true,
+        });
+      } else {
+        dev[deviceName][controlName] = getContolValue(controlName, device[controlName], controlsTypes);
       }
     }
   });
