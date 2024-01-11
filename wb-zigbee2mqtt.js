@@ -142,19 +142,12 @@ function getControlType(controlName, controlsTypes) {
 }
 
 function getContolValue(contolName, controlValue, controlsTypes) {
-  if (contolName in controlsTypes) {
-    return controlValue;
-  } else {
-    if (controlValue != null) {
-      if (typeof controlValue === 'object') {
-        return JSON.stringify(controlValue);
-      } else {
-        return controlValue.toString();
-      }
-    } else {
-      return '';
-    }
+  if (contolName in controlsTypes) return controlValue;
+  if (controlValue == null) return '';
+  if (typeof controlValue === 'object') {
+    return JSON.stringify(controlValue);
   }
+  return controlValue.toString();
 }
 
 function initTracker(deviceName) {
@@ -172,7 +165,11 @@ function initTracker(deviceName) {
           readonly: true,
         });
       } else {
-        dev[deviceName][controlName] = getContolValue(controlName, device[controlName], controlsTypes);
+        dev[deviceName][controlName] = getContolValue(
+          controlName,
+          device[controlName],
+          controlsTypes
+        );
       }
     }
   });
