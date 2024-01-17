@@ -1,5 +1,5 @@
 var base_topic = 'zigbee2mqtt';
-var topicType = JSON.stringify({
+var controlsTypes = {
   battery: 'value',
   linkquality: 'value',
   temperature: 'temperature',
@@ -13,7 +13,7 @@ var topicType = JSON.stringify({
   occupancy_level: 'value',
   power: 'power',
   voltage: 'voltage',
-});
+};
 
 defineVirtualDevice('zigbee2mqtt', {
   title: 'Zigbee2mqtt',
@@ -137,33 +137,40 @@ defineRule('Permit join', {
   });
 })();
 
-function initTracker(ctrlName) {
-  trackMqtt(base_topic + '/' + ctrlName, function (obj) {
-    JSON.parse(obj.value, function (k, v) {
-      if (k != '') {
-        var obj = JSON.parse(topicType);
-        var ks = Object.keys(obj);
-        var resultIndex = ks.indexOf(k, 0);
-        if (resultIndex >= 0) {
-          if (!getDevice(ctrlName).isControlExists(k)) {
-            getDevice(ctrlName).addControl(k, {
-              type: obj[ks[resultIndex]],
-              value: v,
-              readonly: true,
-            });
-          }
-          dev[ctrlName][k] = v;
-        } else {
-          if (!getDevice(ctrlName).isControlExists(k)) {
-            getDevice(ctrlName).addControl(k, {
-              type: 'text',
-              value: v,
-              readonly: true,
-            });
-          }
-          dev[ctrlName][k] = v != null ? v.toString() : '';
-        }
+function getControlType(controlName, controlsTypes) {
+  return controlName in controlsTypes ? controlsTypes[controlName] : 'text';
+}
+
+function getContolValue(contolName, controlValue, controlsTypes) {
+  if (contolName in controlsTypes) return controlValue;
+  if (controlValue == null) return '';
+  if (typeof controlValue === 'object') {
+    return JSON.stringify(controlValue);
+  }
+  return controlValue.toString();
+}
+
+function initTracker(deviceName) {
+  trackMqtt(base_topic + '/' + deviceName, function (obj) {
+    var device = JSON.parse(obj.value);
+    for (var controlName in device) {
+      if (controlName == '') {
+        continue;
       }
-    });
+
+      if (!getDevice(deviceName).isControlExists(controlName)) {
+        getDevice(deviceName).addControl(controlName, {
+          type: getControlType(controlName, controlsTypes),
+          value: getContolValue(controlName, device[controlName], controlsTypes),
+          readonly: true,
+        });
+      } else {
+        dev[deviceName][controlName] = getContolValue(
+          controlName,
+          device[controlName],
+          controlsTypes
+        );
+      }
+    }
   });
 }
