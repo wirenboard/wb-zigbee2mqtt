@@ -117,20 +117,13 @@ defineRule('Permit join', {
     if (obj.value != '') {
       JSON.parse(obj.value, function (k, v) {
         if (k == 'friendly_name' && v != 'Coordinator') {
-          if (getDevice(v) === undefined) {
+          if (device === undefined || !device.isVirtual()) {
             defineVirtualDevice(v, {
               title: v,
               cells: {},
             });
-          } else {
-            if (!getDevice(v).isVirtual()) {
-              defineVirtualDevice(v, {
-                title: v,
-                cells: {},
-              });
-            }
+            initTracker(v);
           }
-          initTracker(v);
         }
       });
     }
