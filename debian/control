@@ -2,11 +2,11 @@ Source: wb-zigbee2mqtt
 Maintainer: Ian Ianin <ianin@wirenboard.ru>
 Section: misc
 Priority: optional
-Standards-Version: 1.0.0
+Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 9), pkg-config
 Homepage: https://github.com/wirenboard/wb-zigbee2mqtt
 
 Package: wb-zigbee2mqtt
 Architecture: all
-Depends: ${misc:Depends}, wb-rules (>= 2.6.0) 
+Depends: ${misc:Depends}, wb-rules (>= 2.20.0~~)
 Description: zigbee2mqtt to Wiren Board MQTT Conventions bridge

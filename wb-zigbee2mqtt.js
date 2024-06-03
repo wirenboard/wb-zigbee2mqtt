@@ -16,28 +16,34 @@ var controlsTypes = {
 };
 
 defineVirtualDevice('zigbee2mqtt', {
-  title: 'Zigbee2mqtt',
+  title: { en: 'Zigbee2mqtt converter', ru: 'Zigbee2mqtt конвертер' },
   cells: {
     State: {
+      title: { en: 'State', ru: 'Состояние' },
       type: 'text',
       value: '',
     },
     'Permit join': {
+      title: { en: 'Permit join', ru: 'Разрешить сопряжение' },
       type: 'switch',
       value: false,
     },
     'Update devices': {
+      title: { en: 'Update devices', ru: 'Обновить устройства' },
       type: 'pushbutton',
     },
     Version: {
+      title: { en: 'Version', ru: 'Версия' },
       type: 'text',
       value: '',
     },
     'Log level': {
+      title: { en: 'Log level', ru: 'Уровень логирования' },
       type: 'text',
       value: '',
     },
     Log: {
+      title: { en: 'Log', ru: 'Лог' },
       type: 'text',
       value: '',
     },
@@ -135,7 +141,7 @@ function getControlType(controlName, controlsTypes) {
   return controlName in controlsTypes ? controlsTypes[controlName] : 'text';
 }
 
-function getContolValue(contolName, controlValue, controlsTypes) {
+function getControlValue(contolName, controlValue, controlsTypes) {
   if (contolName in controlsTypes) return controlValue;
   if (controlValue == null) return '';
   if (typeof controlValue === 'object') {
@@ -155,11 +161,11 @@ function initTracker(deviceName) {
       if (!getDevice(deviceName).isControlExists(controlName)) {
         getDevice(deviceName).addControl(controlName, {
           type: getControlType(controlName, controlsTypes),
-          value: getContolValue(controlName, device[controlName], controlsTypes),
+          value: getControlValue(controlName, device[controlName], controlsTypes),
           readonly: true,
         });
       } else {
-        dev[deviceName][controlName] = getContolValue(
+        dev[deviceName][controlName] = getControlValue(
           controlName,
           device[controlName],
           controlsTypes
