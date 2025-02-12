@@ -76,7 +76,7 @@ defineRule('Permit join', {
     //for zigbee2mqtt 2.x.x and above
     else {
       var payload;
-      payload = newValue ? JSON.stringify({ time: 15 }) : JSON.stringify({ time: 0 });
+      payload = newValue ? JSON.stringify({ time: 254 }) : JSON.stringify({ time: 0 });
       //log.info("Состояние newValue: {}".format(newValue));
       //log.info("Состояние publish_lock: {}".format(publish_lock));
       if (!publish_lock) {
