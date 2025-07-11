@@ -142,7 +142,6 @@ defineRule('Permit join', {
         publish_lock = false;
       }
     }
-
   });
 
   trackMqtt(base_topic + '/bridge/response/permit_join', function (obj) {
@@ -172,10 +171,11 @@ defineRule('Permit join', {
     if (obj.value != '') {
       JSON.parse(obj.value, function (k, v) {
         if (k == 'friendly_name' && v != 'Coordinator') {
-          var device = getDevice(v);
+          var name = getFriendlyName(v);
+          var device = getDevice(name);
           if (device === undefined || !device.isVirtual()) {
-            defineVirtualDevice(v, {
-              title: v,
+            defineVirtualDevice(name, {
+              title: name,
               cells: {},
             });
             initTracker(v);
@@ -185,6 +185,10 @@ defineRule('Permit join', {
     }
   });
 })();
+
+function getFriendlyName(name) {
+  return name.replace('/', '_');
+}
 
 function getControlType(controlName, controlsTypes) {
   return controlName in controlsTypes ? controlsTypes[controlName] : 'text';
@@ -201,20 +205,20 @@ function getControlValue(contolName, controlValue, controlsTypes) {
 
 function initTracker(deviceName) {
   trackMqtt(base_topic + '/' + deviceName, function (obj) {
+    var name = getFriendlyName(deviceName);
     var device = JSON.parse(obj.value);
     for (var controlName in device) {
       if (controlName == '') {
         continue;
       }
-
-      if (!getDevice(deviceName).isControlExists(controlName)) {
-        getDevice(deviceName).addControl(controlName, {
+      if (!getDevice(name).isControlExists(controlName)) {
+        getDevice(name).addControl(controlName, {
           type: getControlType(controlName, controlsTypes),
           value: getControlValue(controlName, device[controlName], controlsTypes),
           readonly: true,
         });
       } else {
-        dev[deviceName][controlName] = getControlValue(
+        dev[name][controlName] = getControlValue(
           controlName,
           device[controlName],
           controlsTypes
