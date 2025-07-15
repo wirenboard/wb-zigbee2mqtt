@@ -1,3 +1,9 @@
+wb-zigbee2mqtt (1.4.1) stable; urgency=medium
+
+  * Fix parsing device friendly_name for values with slashes 
+
+ -- Ilya Titov <ilya.titov@wirenboard.com>  Fri, 11 Jul 2025 14:06:03 +0300
+ 
 wb-zigbee2mqtt (1.4.0) stable; urgency=medium
 
   * Add support permit_join in zigbee2mqtt 2.0+
