@@ -133,6 +133,8 @@ defineRule('Permit join', {
   trackMqtt(base_topic + '/bridge/info', function (obj) {
     var msg = JSON.parse(obj.value);
     dev['zigbee2mqtt']['Version'] = msg['version'];
+    var versionParts = msg['version'].split('.').map(Number);
+    majorVersion = versionParts.length > 0 ? versionParts[0] : 0;
 
     //for zigbee2mqtt 2.x.x and above
     if (majorVersion >= 2) {
@@ -195,7 +197,8 @@ function getControlType(controlName, controlsTypes) {
 }
 
 function getControlValue(contolName, controlValue, controlsTypes) {
-  if (controlValue === null || controlValue === undefined) return undefined;
+  //for zigbee2mqtt 2.x.x and above: skip null/undefined to avoid TypeError
+  if (majorVersion >= 2 && (controlValue === null || controlValue === undefined)) return undefined;
   if (contolName in controlsTypes) return controlValue;
   if (controlValue == null) return '';
   if (typeof controlValue === 'object') {
