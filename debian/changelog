@@ -1,3 +1,9 @@
+wb-zigbee2mqtt (1.4.2) stable; urgency=medium
+
+  * Fix for receiving null value
+
+ -- Ilya Tikhonyuk <ilya.tikhonyuk@wirenboard.com>  Tue, 10 Mar 2026 13:20:00 +0300
+
 wb-zigbee2mqtt (1.4.1) stable; urgency=medium
 
   * Fix parsing device friendly_name for values with slashes 

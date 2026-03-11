@@ -195,6 +195,7 @@ function getControlType(controlName, controlsTypes) {
 }
 
 function getControlValue(contolName, controlValue, controlsTypes) {
+  if (controlValue === null || controlValue === undefined) return undefined;
   if (contolName in controlsTypes) return controlValue;
   if (controlValue == null) return '';
   if (typeof controlValue === 'object') {
@@ -211,6 +212,12 @@ function initTracker(deviceName) {
       if (controlName == '') {
         continue;
       }
+
+      var value = getControlValue(controlName, device[controlName], controlsTypes);
+      if (value === undefined) {
+        continue;
+      }
+
       if (!getDevice(name).isControlExists(controlName)) {
         getDevice(name).addControl(controlName, {
           type: getControlType(controlName, controlsTypes),
