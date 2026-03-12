@@ -179,6 +179,7 @@ defineRule('Permit join', {
               cells: {},
             });
             initTracker(v);
+            initTrackerAvailability(v);
           }
         }
       });
@@ -202,6 +203,31 @@ function getControlValue(contolName, controlValue, controlsTypes) {
     return JSON.stringify(controlValue);
   }
   return controlValue.toString();
+}
+
+function initTrackerAvailability(deviceName) {
+  trackMqtt(base_topic + '/' + deviceName + '/availability', function (obj) {
+    var name = getFriendlyName(deviceName);
+    var device = JSON.parse(obj.value);
+    for (var controlName in device) {
+      if (controlName == '') {
+        continue;
+      }
+      if (!getDevice(name).isControlExists(controlName)) {
+        getDevice(name).addControl(controlName, {
+          type: getControlType(controlName, controlsTypes),
+          value: getControlValue(controlName, device[controlName], controlsTypes),
+          readonly: true,
+        });
+      } else {
+        dev[name][controlName] = getControlValue(
+          controlName,
+          device[controlName],
+          controlsTypes
+        );
+      }
+    }
+  });
 }
 
 function initTracker(deviceName) {
