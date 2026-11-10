@@ -1,3 +1,10 @@
+wb-zigbee2mqtt (1.4.3) stable; urgency=medium
+
+  * Accept numeric values sent as strings (noise of WB-MSW-ZIGBEE v.3), skip
+    booleans, empty strings and non-finite numbers for numeric controls
+
+ -- Victor Fedorov <victor.fedorov@wirenboard.com>  Tue, 10 Nov 2026 16:13:35 +0300
+
 wb-zigbee2mqtt (1.4.2) stable; urgency=medium
 
   * Fix for receiving null value
