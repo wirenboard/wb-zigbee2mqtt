@@ -197,8 +197,12 @@ function getControlType(controlName, controlsTypes) {
 // z2m sends some numbers as strings (noise of WB-MSW-ZIGBEE v.3): a numeric
 // control takes a finite number or a string holding one, anything else is skipped.
 function getNumericValue(value) {
-  if (typeof value === 'string' && value.trim() !== '') value = Number(value);
-  return typeof value === 'number' && isFinite(value) ? value : undefined;
+  if (typeof value === 'string') {
+    if (value.trim() === '') return undefined;
+    value = Number(value);
+  }
+  if (typeof value !== 'number' || !isFinite(value)) return undefined;
+  return value;
 }
 
 function getControlValue(contolName, controlValue, controlsTypes) {
