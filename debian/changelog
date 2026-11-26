@@ -1,3 +1,11 @@
+wb-zigbee2mqtt (1.4.4) stable; urgency=medium
+
+  * Update LICENSE: Wiren Board as the copyright holder,
+    2020 as the first publication year
+  * Fill debian/copyright in the DEP-5 format
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Thu, 26 Nov 2026 18:14:29 +0300
+
 wb-zigbee2mqtt (1.4.3) stable; urgency=medium
 
   * Accept numeric values sent as strings (noise of WB-MSW-ZIGBEE v.3), skip
